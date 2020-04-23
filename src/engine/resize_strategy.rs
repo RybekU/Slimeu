@@ -1,6 +1,4 @@
-use quicksilver::{
-    geom::{Rectangle, Vector},
-};
+use quicksilver::geom::{Rectangle, Vector};
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 /// The way to adjust the content when the size of the window changes
@@ -19,10 +17,7 @@ pub enum ResizeStrategy {
     ///
     /// 16, 9, for example, will allow any 16:9 viewport; 160, 90 will only allow 16:9 viewports
     /// that are divisible by 10
-    IntegerScale {
-        width: u32,
-        height: u32
-    },
+    IntegerScale { width: u32, height: u32 },
 }
 
 impl ResizeStrategy {
@@ -43,7 +38,9 @@ impl ResizeStrategy {
             ResizeStrategy::IntegerScale { width, height } => {
                 // Find the integer scale that fills the most amount of screen with no cut off
                 // content
-                Vector::new(width, height) * int_scale(new_size.x / width as f32).min(int_scale(new_size.y / height as f32))
+                Vector::new(width, height)
+                    * int_scale(new_size.x / width as f32)
+                        .min(int_scale(new_size.y / height as f32))
             }
         };
         Rectangle::new((new_size - content_area) / 2, content_area)

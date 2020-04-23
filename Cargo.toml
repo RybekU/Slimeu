@@ -8,10 +8,17 @@ edition = "2018"
 
 [dependencies]
 # framework
-quicksilver = {git = "https://github.com/ryanisaacg/quicksilver", rev = "8fdff10"}
+quicksilver = {git = "https://github.com/ryanisaacg/quicksilver", rev = "8fdff10", features = ["stdweb"]}
 
 # golem
 golem = '0.1.3'
 
 # logger
 log = "0.4.8"
+
+# engine/input dep
+enum-map = "0.6.2"
+
+#ecs
+legion = "0.2.1"
+
