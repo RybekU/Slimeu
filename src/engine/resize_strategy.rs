@@ -6,6 +6,7 @@ pub enum ResizeStrategy {
     /// Use black bars to keep the size exactly the same
     ///
     /// If necessary, content will be cut off
+    #[allow(dead_code)]
     Maintain,
     /// Fill the screen while maintaing aspect ratio, possiby cutting off content in the process
     Fill,
