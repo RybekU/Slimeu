@@ -16,8 +16,12 @@ extern crate log;
 mod engine;
 mod events;
 mod game;
+mod gfx;
 
 pub use game::DIMENSIONS;
+
+// To add test entities
+use crate::engine::components::{Position, Sprite};
 
 fn main() {
     run(
@@ -35,29 +39,44 @@ fn main() {
 
 // This time we might return an error, so we use a Result
 async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Result<()> {
+    // TODO: Load all required images and put them in a map.
     // Load the image and wait for it to finish
     // We also use '?' to handle errors like file-not-found
     let image = Image::load(&gfx, "image.png").await?;
-    image.set_magnification(TextureFilter::Nearest)?;
+    let image_copy = image.clone();
 
-    let coords = Rectangle::new(Vector::ZERO, image.size());
+    image.set_magnification(TextureFilter::Nearest)?;
 
     let mut game_data = Game::new();
     game_data.resize_strategy = set_resize_strategy(&window, &gfx);
+    game_data.images.insert("image".into(), image);
 
-    // Experimentally add Arc<Window> to gamedata
-    // use std::sync::Arc;
-    // game_data.resources.insert(Arc::<Window>::new(window));
+    // Test add some entities with Position and Image use crate::engine::components::{Position, Sprite};
+    let _entities = game_data
+        .world
+        .insert(
+            (),
+            vec![
+                (
+                    Position { src: Vector::ZERO },
+                    Sprite::new("image".into(), &image_copy),
+                ),
+                (
+                    Position {
+                        src: Vector::new(25., 25.),
+                    },
+                    Sprite::new("image".into(), &image_copy),
+                ),
+            ],
+        )
+        .to_vec();
 
     let camera = Transform::orthographic(Rectangle::new(Vector::ZERO, DIMENSIONS));
     gfx.set_projection(camera);
 
-    let fill = Rectangle::new_sized(Vector::new(320., 180.));
-
     let mut update_timer = Timer::time_per_second(60.0);
     let mut counter = 0;
     loop {
-        // TODO: Move event handling to events.rs
         crate::events::handle_events(&window, &gfx, &mut events, &mut game_data).await;
 
         while update_timer.tick() {
@@ -71,22 +90,9 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
                 counter = 0;
             }
         }
-        gfx.clear(Color::BLACK);
-        gfx.set_transform(Transform::IDENTITY);
 
-        gfx.fill_rect(&fill, Color::CYAN);
-        gfx.draw_image(&image, Rectangle::new_sized(image.size()));
-
-        //gfx.set_transform(Transform::translate(location) * Transform::translate(-image.size()/2) *Transform::rotate(30));
-        //gfx.draw_image(&image, Rectangle::new(image.size()/2, image.size()));
-
-        let center = coords.center();
-        gfx.set_transform(
-            Transform::translate(center) * Transform::rotate(30.0) * Transform::translate(-center),
-        );
-        gfx.draw_image(&image, coords);
-
-        gfx.present(&window)?;
+        // TODO: Move drawing to graphics.rs and use legion to determine what should be drawn
+        crate::gfx::render(&window, &mut gfx, &game_data).await;
     }
 }
 
@@ -107,3 +113,10 @@ fn set_resize_strategy(window: &Window, gfx: &Graphics) -> ResizeStrategy {
 
     resize_strategy
 }
+
+//gfx.set_transform(Transform::translate(location) * Transform::translate(-image.size()/2) *Transform::rotate(30));
+//gfx.draw_image(&image, Rectangle::new(image.size()/2, image.size()));
+
+// gfx.set_transform(
+//     Transform::translate(center) * Transform::rotate(30.0) * Transform::translate(-center),
+// );

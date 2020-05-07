@@ -10,6 +10,11 @@ use crate::engine::input::Button;
 use crate::engine::ButtonsState;
 use quicksilver::lifecycle::EventCache;
 
+// images
+use fxhash::FxHashMap;
+use quicksilver::graphics::Image;
+type ImageStorage = FxHashMap<String, Image>;
+
 pub struct Game {
     pub universe: Universe,
     pub resources: Resources,
@@ -18,6 +23,7 @@ pub struct Game {
     pub world: World,
     // schedule most definitely will become state specific
     pub schedule: Schedule,
+    pub images: ImageStorage,
 }
 
 impl Game {
@@ -32,12 +38,16 @@ impl Game {
 
         let resize_strategy = ResizeStrategy::Stretch;
 
+        // Texture is not thread safe can't put as resource for now!
+        let images = ImageStorage::default();
+
         Game {
             universe,
             resources,
             world,
             schedule,
             resize_strategy,
+            images,
         }
     }
 }

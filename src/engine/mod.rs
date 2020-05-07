@@ -1,3 +1,4 @@
+pub mod components;
 pub mod input;
 mod resize_strategy;
 
