@@ -1,7 +1,7 @@
 use golem::TextureFilter;
 use quicksilver::{
-    geom::{Rectangle, Shape, Transform, Vector},
-    graphics::{Color, Graphics, Image},
+    geom::{Rectangle, Transform, Vector},
+    graphics::{Graphics, Image},
     lifecycle::{run, EventStream, Settings, Window},
     Result, Timer,
 };
@@ -17,11 +17,15 @@ mod engine;
 mod events;
 mod game;
 mod gfx;
+mod phx;
 
 pub use game::DIMENSIONS;
 
 // To add test entities
 use crate::engine::components::{Position, Sprite};
+
+// To add test collision
+use crate::phx::CollisionWorld;
 
 fn main() {
     run(
@@ -51,25 +55,54 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
     game_data.resize_strategy = set_resize_strategy(&window, &gfx);
     game_data.images.insert("image".into(), image);
 
-    // Test add some entities with Position and Image use crate::engine::components::{Position, Sprite};
-    let _entities = game_data
-        .world
-        .insert(
-            (),
-            vec![
-                (
-                    Position { src: Vector::ZERO },
-                    Sprite::new("image".into(), &image_copy),
-                ),
-                (
+    {
+        let mut cool = game_data
+            .resources
+            .get_mut::<CollisionWorld>()
+            .expect("CollisionWorld missing somehow");
+
+        // Test add some entities with Position and Image use crate::engine::components::{Position, Sprite};
+        let _entities = game_data
+            .world
+            .insert(
+                (),
+                vec![
+                    (
+                        Position { src: Vector::ZERO },
+                        Sprite::new("image".into(), &image_copy),
+                    ),
+                    (
+                        Position {
+                            src: Vector::new(25., 25.),
+                        },
+                        Sprite::new("image".into(), &image_copy),
+                    ),
+                ],
+            )
+            .to_vec();
+
+        // Test adding collision to entity
+        let (hitbox, hitbox_ref) = crate::phx::Hitbox::new_without_entity(
+            &mut cool,
+            Vector::new(100., 100.),
+            image_copy.size(),
+        );
+        let with_collision = game_data
+            .world
+            .insert(
+                (),
+                vec![(
                     Position {
-                        src: Vector::new(25., 25.),
+                        src: Vector::new(100., 100.),
                     },
                     Sprite::new("image".into(), &image_copy),
-                ),
-            ],
-        )
-        .to_vec();
+                    hitbox,
+                )],
+            )
+            .to_vec();
+        *hitbox_ref.data_mut() = Some(with_collision[0]);
+        println!("{:#?}", hitbox_ref.data());
+    }
 
     let camera = Transform::orthographic(Rectangle::new(Vector::ZERO, DIMENSIONS));
     gfx.set_projection(camera);

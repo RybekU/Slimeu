@@ -15,6 +15,9 @@ use fxhash::FxHashMap;
 use quicksilver::graphics::Image;
 type ImageStorage = FxHashMap<String, Image>;
 
+// collisions
+use crate::phx::CollisionWorld;
+
 pub struct Game {
     pub universe: Universe,
     pub resources: Resources,
@@ -56,6 +59,7 @@ fn init_resources() -> Resources {
     let mut resources = Resources::default();
     resources.insert(EventCache::default());
     resources.insert(ButtonsState::default());
+    resources.insert(CollisionWorld::new(0.02));
     resources
 }
 

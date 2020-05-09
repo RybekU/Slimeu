@@ -1,4 +1,4 @@
-use quicksilver::geom::{Rectangle, Shape, Vector};
+use quicksilver::geom::{Rectangle, Vector};
 use quicksilver::graphics::Image;
 
 // Position of the entity
@@ -21,12 +21,3 @@ impl Sprite {
         }
     }
 }
-
-// TODO: Debug information goal - draw hitboxes with special feature flag
-// Hitbox - offset should be set relative to the center
-pub struct Hitbox {
-    pub src: Rectangle,
-    pub offset: Vector,
-}
-
-// TODO: Study hitbox and hurtbox

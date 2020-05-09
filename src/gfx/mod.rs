@@ -1,13 +1,14 @@
 use crate::game::Game;
-use quicksilver::geom::Vector;
-use quicksilver::lifecycle::{Event, EventCache, EventStream, Window};
+use quicksilver::lifecycle::Window;
 use quicksilver::{
-    geom::{Rectangle, Shape, Transform},
-    graphics::{Color, Graphics, Image},
+    geom::{Rectangle, Transform, Vector},
+    graphics::{Color, Graphics},
 };
 
 use crate::engine::components::{Position, Sprite};
 use legion::prelude::*;
+
+mod debug_info;
 
 pub async fn render(window: &Window, gfx: &mut Graphics, game_data: &Game) {
     let fill = Rectangle::new_sized(Vector::new(320., 180.));
@@ -20,6 +21,10 @@ pub async fn render(window: &Window, gfx: &mut Graphics, game_data: &Game) {
         // TODO: Handle the error by using default texture
         let image = game_data.images.get(&img.src).unwrap();
         gfx.draw_image(&image, Rectangle::new(pos.src + img.offset, image.size()));
+    }
+
+    if cfg!(feature = "debug-info") {
+        self::debug_info::visualize_hitbox(gfx, game_data);
     }
 
     let _ = gfx.present(&window);

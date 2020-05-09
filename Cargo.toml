@@ -6,6 +6,9 @@ edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[features]
+debug-info = []
+
 [dependencies]
 # framework
 quicksilver = {git = "https://github.com/ryanisaacg/quicksilver", rev = "8fdff10", features = ["stdweb"]}
@@ -21,6 +24,10 @@ enum-map = "0.6.2"
 
 #other
 fxhash = "0.2.1"
+
+# collisions
+ncollide2d = "0.23.0"
+nalgebra = "0.21.0"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 legion = {git = "https://github.com/TomGillen/legion", rev = "bd441f4"}
