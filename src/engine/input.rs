@@ -8,7 +8,7 @@ use enum_map::{Enum, EnumMap};
 use quicksilver::lifecycle::{EventCache, Key};
 
 /// Treat as if the game had dedicated controller with these buttons.
-#[derive(Debug, Enum)]
+#[derive(Debug, Enum, Clone, Copy)]
 pub enum Button {
     Left,
     Right,

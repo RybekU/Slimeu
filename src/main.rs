@@ -20,12 +20,16 @@ mod gfx;
 mod phx;
 
 pub use game::DIMENSIONS;
+pub use game::UPDATE_RATE;
 
 // To add test entities
 use crate::engine::components::{Position, Sprite};
 
 // To add test collision
 use crate::phx::CollisionWorld;
+
+// To test velocity
+use crate::phx::Velocity;
 
 fn main() {
     run(
@@ -40,7 +44,7 @@ fn main() {
         app,
     );
 }
-
+struct Player;
 // This time we might return an error, so we use a Result
 async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Result<()> {
     // TODO: Load all required images and put them in a map.
@@ -82,12 +86,13 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
             .to_vec();
 
         // Test adding collision to entity
-        let (hitbox, hitbox_ref) = crate::phx::Hitbox::new_without_entity(
+        let (hitbox, _hitbox_ref) = crate::phx::Hitbox::new(
             &mut cool,
             Vector::new(100., 100.),
             image_copy.size(),
+            crate::phx::CollisionGroup::Ally,
         );
-        let with_collision = game_data
+        let _with_collision = game_data
             .world
             .insert(
                 (),
@@ -97,17 +102,59 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
                     },
                     Sprite::new("image".into(), &image_copy),
                     hitbox,
+                    Velocity {
+                        src: Vector::new(16., 16.),
+                    },
+                    Player,
                 )],
             )
             .to_vec();
-        *hitbox_ref.data_mut() = Some(with_collision[0]);
-        println!("{:#?}", hitbox_ref.data());
     }
+    {
+        let mut cool = game_data
+            .resources
+            .get_mut::<CollisionWorld>()
+            .expect("CollisionWorld missing somehow");
 
+        // Test add some entities with Position and Image use crate::engine::components::{Position, Sprite};
+
+        // Test adding collision to entity
+        let (hitbox, _hitbox_ref) = crate::phx::Hitbox::new(
+            &mut cool,
+            Vector::new(150., 150.),
+            image_copy.size(),
+            crate::phx::CollisionGroup::Terrain,
+        );
+        let _with_collision = game_data
+            .world
+            .insert(
+                (),
+                vec![(
+                    Position {
+                        src: Vector::new(150., 150.),
+                    },
+                    Sprite::new("image".into(), &image_copy),
+                    hitbox,
+                    Velocity {
+                        src: Vector::new(0., 0.),
+                    }
+                )],
+            )
+            .to_vec();
+    }
+    {
+    
+    let handle = 
+    {
+        let mut cworld = game_data.resources.get_mut::<CollisionWorld>().expect("lol");
+        let (test, test2) = crate::phx::Hitbox::new(&mut cworld, Vector::new(25., 25.), Vector::new(50., 50.), crate::phx::CollisionGroup::Terrain);
+        test.src};
+    game_data.resources.insert(handle);
+    }
     let camera = Transform::orthographic(Rectangle::new(Vector::ZERO, DIMENSIONS));
     gfx.set_projection(camera);
 
-    let mut update_timer = Timer::time_per_second(60.0);
+    let mut update_timer = Timer::time_per_second(UPDATE_RATE);
     let mut counter = 0;
     loop {
         crate::events::handle_events(&window, &gfx, &mut events, &mut game_data).await;
@@ -124,7 +171,6 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
             }
         }
 
-        // TODO: Move drawing to graphics.rs and use legion to determine what should be drawn
         crate::gfx::render(&window, &mut gfx, &game_data).await;
     }
 }
