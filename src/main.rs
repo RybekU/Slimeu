@@ -125,31 +125,40 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
             image_copy.size(),
             crate::phx::CollisionGroup::Terrain,
         );
+        let (hitbox2, _hitbox_ref) = crate::phx::Hitbox::new(
+            &mut cool,
+            Vector::new(125., 125.),
+            image_copy.size(),
+            crate::phx::CollisionGroup::Terrain,
+        );
         let _with_collision = game_data
             .world
             .insert(
                 (),
-                vec![(
-                    Position {
-                        src: Vector::new(150., 150.),
-                    },
-                    Sprite::new("image".into(), &image_copy),
-                    hitbox,
-                    Velocity {
-                        src: Vector::new(0., 0.),
-                    }
-                )],
+                vec![
+                    (
+                        Position {
+                            src: Vector::new(150., 150.),
+                        },
+                        Sprite::new("image".into(), &image_copy),
+                        hitbox,
+                        Velocity {
+                            src: Vector::new(0., 0.),
+                        },
+                    ),
+                    (
+                        Position {
+                            src: Vector::new(125., 125.),
+                        },
+                        Sprite::new("image".into(), &image_copy),
+                        hitbox2,
+                        Velocity {
+                            src: Vector::new(0., 0.),
+                        },
+                    ),
+                ],
             )
             .to_vec();
-    }
-    {
-    
-    let handle = 
-    {
-        let mut cworld = game_data.resources.get_mut::<CollisionWorld>().expect("lol");
-        let (test, test2) = crate::phx::Hitbox::new(&mut cworld, Vector::new(25., 25.), Vector::new(50., 50.), crate::phx::CollisionGroup::Terrain);
-        test.src};
-    game_data.resources.insert(handle);
     }
     let camera = Transform::orthographic(Rectangle::new(Vector::ZERO, DIMENSIONS));
     gfx.set_projection(camera);

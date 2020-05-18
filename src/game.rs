@@ -62,7 +62,6 @@ fn init_resources() -> Resources {
     resources.insert(ButtonsState::default());
     resources.insert(CollisionWorld::new(0.02));
     resources.insert(crate::phx::PositionCorrection::default());
-    resources.insert(crate::phx::ActiveCollisions::with_capacity(25));
     resources
 }
 
@@ -72,10 +71,8 @@ fn init_schedule() -> Schedule {
     let test_button_state = SystemBuilder::new("test_button_state")
         .read_resource::<EventCache>()
         .write_resource::<ButtonsState>()
-        .write_resource::<crate::phx::CollisionWorld>()
-        .write_resource::<crate::phx::CollisionHandle>()
         .with_query(<(Read<Player>, Write<Velocity>)>::query())
-        .build(move |_, mut world, (event_cache, button_state, cworld, handle), query| {
+        .build(move |_, mut world, (event_cache, button_state), query| {
             button_state.update(&event_cache);
             // if button_state.is_pressed(Button::Up) {
             //     debug!("Holding UP!");
@@ -85,8 +82,6 @@ fn init_schedule() -> Schedule {
             }
             if button_state.released(Button::Jump) {
                 debug!("Congrats on releasing the Jump button");
-                let something = handle.clone();
-                cworld.remove(&[something]);
             }
             const KEYS: &'static [(Button, f32, f32)] = &[
                 (Button::Up, 0., -1.),
@@ -113,7 +108,7 @@ fn init_schedule() -> Schedule {
         // from here onwards Position shouldn't be modified by non-ncollide related systems
         .add_system(crate::phx::sync_ncollide())
         .add_system(crate::phx::ncollide_update())
-        .add_system(crate::phx::collision::correct_position())
+        .add_system(crate::phx::correct_position())
         // here the position is already corrected... OR IS IT?
         .build()
 }
