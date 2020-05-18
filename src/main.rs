@@ -180,7 +180,7 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
             }
         }
 
-        crate::gfx::render(&window, &mut gfx, &game_data).await;
+        crate::gfx::render(&window, &mut gfx, &game_data);
     }
 }
 

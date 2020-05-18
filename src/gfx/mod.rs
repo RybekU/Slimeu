@@ -10,7 +10,7 @@ use legion::prelude::*;
 
 mod debug_info;
 
-pub async fn render(window: &Window, gfx: &mut Graphics, game_data: &Game) {
+pub fn render(window: &Window, gfx: &mut Graphics, game_data: &Game) {
     let fill = Rectangle::new_sized(Vector::new(320., 180.));
     gfx.clear(Color::BLACK);
     gfx.set_transform(Transform::IDENTITY);
