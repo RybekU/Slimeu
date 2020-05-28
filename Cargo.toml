@@ -26,7 +26,7 @@ enum-map = "0.6.2"
 fxhash = "0.2.1"
 
 # collisions
-ncollide2d = {git = "https://github.com/rustsim/ncollide", rev = "c3e40ef"} #{path = "../ncollide/build/ncollide2d" }
+ncollide2d = {git = "https://github.com/rustsim/ncollide", rev = "7c91c8d"} #{path = "../ncollide/build/ncollide2d" }
 nalgebra = "0.21.0"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]

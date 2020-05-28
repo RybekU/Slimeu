@@ -17,7 +17,7 @@ pub enum Button {
     Jump,
 }
 
-// TODO: Read edge-based input and turn it into level-based.
+// Reads the edge-based input and turn it into level-based.
 pub struct ButtonsState {
     bindings: EnumMap<Button, (Option<Key>, u8)>,
 }

@@ -47,7 +47,6 @@ fn main() {
 struct Player;
 // This time we might return an error, so we use a Result
 async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Result<()> {
-    // TODO: Load all required images and put them in a map.
     // Load the image and wait for it to finish
     // We also use '?' to handle errors like file-not-found
     let image = Image::load(&gfx, "image.png").await?;

@@ -1442,7 +1442,7 @@ dependencies = [
 [[package]]
 name = "ncollide2d"
 version = "0.23.0"
-source = "git+https://github.com/rustsim/ncollide?rev=c3e40ef#c3e40efef09162c5845b75306eaf0ed3cc578adf"
+source = "git+https://github.com/rustsim/ncollide?rev=7c91c8d#7c91c8d469d54e8c86945f513bb0c8c31efb4c80"
 dependencies = [
  "approx",
  "bitflags",

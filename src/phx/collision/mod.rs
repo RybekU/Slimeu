@@ -16,8 +16,6 @@ pub type Vec2 = nalgebra::Vector2<f32>;
 
 use fxhash::FxHashMap;
 pub type PositionCorrection = FxHashMap<CollisionHandle, Vec2>;
-// TODO: Wrap into a structure with interface that will make it possible to convert into hashmap or something if necessary
-// pub type ActiveCollisions = Vec<(CollisionHandle, CollisionHandle)>;
 
 #[derive(Debug, Clone, Copy)]
 pub enum CollisionGroup {
