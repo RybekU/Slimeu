@@ -43,21 +43,11 @@ fn classify_collision(
                 if pos_correction == Vec2::zeros() {
                     return;
                 }
-                let current_correction = pos_correct.entry(*handle1).or_insert(Vec2::zeros());
-                *current_correction = Vec2::new(
-                    best_correction(current_correction.x, pos_correction.x),
-                    best_correction(current_correction.y, pos_correction.y),
-                );
-                if deepest.depth.abs() > 40. {
-                    println!("Correction: {:#?}", current_correction);
-                    println!(
-                        "Depth {:#?}, {:#?}",
-                        deepest.depth,
-                        -deepest.normal.into_inner()
-                    );
-                    println!("Position1: {:#?}", object1.position());
-                    println!("Position2: {:#?}", object2.position());
-                }
+                //     let current_correction = pos_correct.entry(*handle1).or_insert(Vec2::zeros());
+                //     *current_correction = Vec2::new(
+                //         best_correction(current_correction.x, pos_correction.x),
+                //         best_correction(current_correction.y, pos_correction.y),
+                //     );
             }
         }
         (_first, _second) => {}

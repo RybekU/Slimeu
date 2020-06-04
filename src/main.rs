@@ -88,7 +88,7 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
         let (hitbox, _hitbox_ref) = crate::phx::Hitbox::new(
             &mut cool,
             Vector::new(100., 100.),
-            image_copy.size(),
+            Vector::new(4., 4.),
             crate::phx::CollisionGroup::Ally,
         );
         let _with_collision = game_data
@@ -130,6 +130,12 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
             image_copy.size(),
             crate::phx::CollisionGroup::Terrain,
         );
+        let (hitbox3, _hitbox_ref) = crate::phx::Hitbox::new(
+            &mut cool,
+            Vector::new(200., 10.),
+            Vector::new(2., 120.),
+            crate::phx::CollisionGroup::Terrain,
+        );
         let _with_collision = game_data
             .world
             .insert(
@@ -151,6 +157,16 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
                         },
                         Sprite::new("image".into(), &image_copy),
                         hitbox2,
+                        Velocity {
+                            src: Vector::new(0., 0.),
+                        },
+                    ),
+                    (
+                        Position {
+                            src: Vector::new(200., 10.),
+                        },
+                        Sprite::new("image".into(), &image_copy),
+                        hitbox3,
                         Velocity {
                             src: Vector::new(0., 0.),
                         },

@@ -4,7 +4,7 @@ use quicksilver::geom::Vector;
 
 //320 x 180 or 480 x 270
 pub const DIMENSIONS: Vector = Vector { x: 320., y: 180. };
-pub const UPDATE_RATE: f32 = 60.;
+pub const UPDATE_RATE: f32 = 10.;
 
 // test button system
 use crate::engine::input::Button;
@@ -60,7 +60,7 @@ fn init_resources() -> Resources {
     let mut resources = Resources::default();
     resources.insert(EventCache::default());
     resources.insert(ButtonsState::default());
-    resources.insert(CollisionWorld::new(0.02));
+    resources.insert(CollisionWorld::new(0.0));
     resources.insert(crate::phx::PositionCorrection::default());
     resources
 }
@@ -97,8 +97,8 @@ fn init_schedule() -> Schedule {
                 }
             });
             for (_, mut vel) in query.iter_mut(&mut world) {
-                vel.src.x = dir.0 * 64.;
-                vel.src.y = dir.1 * 64.;
+                vel.src.x = dir.0 * 64. * 6.;
+                vel.src.y = dir.1 * 64. * 6.;
             }
         });
 

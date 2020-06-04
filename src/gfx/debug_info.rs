@@ -25,7 +25,10 @@ pub fn visualize_hitbox(gfx: &mut Graphics, game_data: &Game) {
             .expect("Debug_Info: The shape isn't a cuboid")
             .half_extents();
         let area = Rectangle::new(
-            Vector::new(position.x - half_rect.x, position.y - half_rect.y),
+            Vector::new(
+                f32::round(position.x - half_rect.x),
+                f32::round(position.y - half_rect.y),
+            ),
             Vector::new(half_rect.x, half_rect.y) * 2.0,
         );
         gfx.fill_rect(&area, Color::BLUE.with_alpha(0.2));
