@@ -25,9 +25,6 @@ pub use game::UPDATE_RATE;
 // To add test entities
 use crate::engine::components::{Position, Sprite};
 
-// To add test collision
-use crate::phx::CollisionWorld;
-
 // To test velocity
 use crate::phx::Velocity;
 
@@ -59,10 +56,11 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
     game_data.images.insert("image".into(), image);
 
     {
+        use engine::physics::PhysicsWorld;
         let mut cool = game_data
             .resources
-            .get_mut::<CollisionWorld>()
-            .expect("CollisionWorld missing somehow");
+            .get_mut::<PhysicsWorld>()
+            .expect("PhysicsWorld missing somehow");
 
         // Test add some entities with Position and Image use crate::engine::components::{Position, Sprite};
         let _entities = game_data
@@ -83,53 +81,40 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
                 ],
             )
             .to_vec();
-
+        use crate::phx::Hitbox;
         // Test adding collision to entity
-        let (hitbox, _hitbox_ref) = crate::phx::Hitbox::new(
-            &mut cool,
-            Vector::new(100., 100.),
-            image_copy.size(),
-            crate::phx::CollisionGroup::Ally,
-        );
+        let hitbox = Hitbox::new(&mut cool, Vector::new(120., 95.), image_copy.size(), true);
         let _with_collision = game_data
             .world
             .insert(
                 (),
                 vec![(
                     Position {
-                        src: Vector::new(100., 100.),
+                        src: Vector::new(120., 95.),
                     },
                     Sprite::new("image".into(), &image_copy),
                     hitbox,
                     Velocity {
-                        src: Vector::new(16., 16.),
+                        src: Vector::new(25., 16.),
                     },
-                    Player,
+                    // Player,
                 )],
             )
             .to_vec();
     }
     {
+        use engine::physics::PhysicsWorld;
         let mut cool = game_data
             .resources
-            .get_mut::<CollisionWorld>()
-            .expect("CollisionWorld missing somehow");
+            .get_mut::<PhysicsWorld>()
+            .expect("PhysicsWorld missing somehow");
 
         // Test add some entities with Position and Image use crate::engine::components::{Position, Sprite};
-
         // Test adding collision to entity
-        let (hitbox, _hitbox_ref) = crate::phx::Hitbox::new(
-            &mut cool,
-            Vector::new(150., 150.),
-            image_copy.size(),
-            crate::phx::CollisionGroup::Terrain,
-        );
-        let (hitbox2, _hitbox_ref) = crate::phx::Hitbox::new(
-            &mut cool,
-            Vector::new(125., 125.),
-            image_copy.size(),
-            crate::phx::CollisionGroup::Terrain,
-        );
+        use crate::phx::Hitbox;
+        let hitbox = Hitbox::new(&mut cool, Vector::new(150., 150.), image_copy.size(), false);
+        let hitbox2 = Hitbox::new(&mut cool, Vector::new(125., 125.), image_copy.size(), false);
+
         let _with_collision = game_data
             .world
             .insert(

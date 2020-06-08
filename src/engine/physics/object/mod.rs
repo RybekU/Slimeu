@@ -1,3 +1,3 @@
 mod body;
 
-pub use self::body::{BodyHandle, Body};
+pub use self::body::{Body, BodyHandle};
