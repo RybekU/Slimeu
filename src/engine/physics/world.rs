@@ -1,12 +1,14 @@
-use super::collision::{self, ContactManifold, Shape};
-use super::object::{Body, BodyHandle};
+use super::collision::ContactManifold;
+use super::object::{collided, collision_info, Body, BodyHandle, BodyState};
 use slab::Slab;
+
+type ContactInfo = (usize, usize, ContactManifold);
 
 pub struct PhysicsWorld {
     // TODO: static bodies? dynamic bodies? ccd? separately?
     pub bodies: Slab<Body>,
 
-    pub manifolds: Vec<(usize, usize, ContactManifold)>,
+    pub manifolds: Vec<ContactInfo>,
 }
 
 impl PhysicsWorld {
@@ -49,29 +51,7 @@ impl PhysicsWorld {
                 if h1 == h2 {
                     continue;
                 }
-                use Shape::*;
-                match (body1.shape, body2.shape) {
-                    (AABB(half_extents1), AABB(half_extents2)) => {
-                        if collision::collision_aabb_aabb(
-                            body1.position,
-                            half_extents1,
-                            body2.position,
-                            half_extents2,
-                        ) {
-                            // debug!("Collision between {} and {}", h1, h2);
-                            let manifold = collision::collision_aabb_aabb_manifold(
-                                body1.position,
-                                half_extents1,
-                                body2.position,
-                                half_extents2,
-                            );
-                            // debug!("Collision information: {:#?}", manifold);
-                            manifold
-                                .into_iter()
-                                .for_each(|m| manifolds.push((h1, h2, m)));
-                        }
-                    }
-                }
+                detect_collision(h1, &body1, h2, &body2, manifolds);
             }
         }
         // resolve collisions
@@ -79,9 +59,43 @@ impl PhysicsWorld {
             let body = bodies.get_mut(*h1).expect("Body missing post collision");
             let contact = manifold.best_contact();
             body.position -= contact.normal * contact.depth;
-            println!("{:#?}", contact.normal);
+
             body.velocity.x *= contact.normal.y.abs();
             body.velocity.y *= contact.normal.x.abs();
+        }
+    }
+}
+
+fn detect_collision(
+    h1: usize,
+    body1: &Body,
+    h2: usize,
+    body2: &Body,
+    manifolds: &mut Vec<ContactInfo>,
+) {
+    use BodyState::*;
+    match (&body1.state, &body2.state) {
+        (Solid, Solid) => {
+            let manifold = collision_info(body1, body2);
+            // debug!("Collision information: {:#?}", manifold);
+            manifold
+                .into_iter()
+                .for_each(|m| manifolds.push((h1, h2, m)));
+        }
+        (Solid, Zone) => {
+            if collided(body1, body2) {
+                // debug!("Solid {} in zone {}", h1, h2);
+            }
+        }
+        (Zone, Solid) => {
+            if collided(body1, body2) {
+                // debug!("Zone {} intercepted solid {}", h1, h2);
+            }
+        }
+        (Zone, Zone) => {
+            if collided(body1, body2) {
+                // debug!("Zone {} collided with zone {}", h1, h2);
+            }
         }
     }
 }

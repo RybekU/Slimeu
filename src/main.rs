@@ -83,7 +83,13 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
             .to_vec();
         use crate::phx::Hitbox;
         // Test adding collision to entity
-        let hitbox = Hitbox::new(&mut cool, Vector::new(120., 95.), image_copy.size(), true);
+        let hitbox = Hitbox::new(
+            &mut cool,
+            Vector::new(120., 95.),
+            image_copy.size(),
+            true,
+            false,
+        );
         let _with_collision = game_data
             .world
             .insert(
@@ -112,8 +118,27 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
         // Test add some entities with Position and Image use crate::engine::components::{Position, Sprite};
         // Test adding collision to entity
         use crate::phx::Hitbox;
-        let hitbox = Hitbox::new(&mut cool, Vector::new(150., 150.), image_copy.size(), false);
-        let hitbox2 = Hitbox::new(&mut cool, Vector::new(125., 125.), image_copy.size(), false);
+        let hitbox = Hitbox::new(
+            &mut cool,
+            Vector::new(150., 150.),
+            image_copy.size(),
+            false,
+            false,
+        );
+        let hitbox2 = Hitbox::new(
+            &mut cool,
+            Vector::new(125., 125.),
+            image_copy.size(),
+            false,
+            false,
+        );
+        let hitbox3 = Hitbox::new(
+            &mut cool,
+            Vector::new(200., 120.),
+            image_copy.size(),
+            false,
+            true,
+        );
 
         let _with_collision = game_data
             .world
@@ -136,6 +161,16 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
                         },
                         Sprite::new("image".into(), &image_copy),
                         hitbox2,
+                        Velocity {
+                            src: Vector::new(0., 0.),
+                        },
+                    ),
+                    (
+                        Position {
+                            src: Vector::new(200., 120.),
+                        },
+                        Sprite::new("image".into(), &image_copy),
+                        hitbox3,
                         Velocity {
                             src: Vector::new(0., 0.),
                         },
