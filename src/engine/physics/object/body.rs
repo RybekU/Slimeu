@@ -4,6 +4,7 @@ use quicksilver::geom::Vector;
 
 /// Describes a body in shape of `Shape`
 //TODO: BodyBuilder for creation of bodies
+#[derive(Clone, Debug)]
 pub struct Body {
     pub shape: Shape,
     pub position: Vector,
@@ -11,38 +12,26 @@ pub struct Body {
     /// and doesn't collide with other static bodies
     pub velocity: Vector,
     //TODO: change into enum
-    pub dynamic: bool,
+    pub btype: BodyType,
     //TODO: collision layer
     /// Whether to treat the body as physical or not
     pub state: BodyState,
 }
 
 impl Body {
-    pub fn new_static(shape: Shape, position: Vector) -> Self {
-        Self {
-            shape,
-            position,
-            velocity: Vector::ZERO,
-            dynamic: false,
-            state: BodyState::Solid,
-        }
-    }
-    pub fn new_dynamic(shape: Shape, position: Vector, velocity: Vector) -> Self {
+    pub fn new(
+        shape: Shape,
+        position: Vector,
+        velocity: Vector,
+        btype: BodyType,
+        state: BodyState,
+    ) -> Self {
         Self {
             shape,
             position,
             velocity,
-            dynamic: true,
-            state: BodyState::Solid,
-        }
-    }
-    pub fn new_static_zone(shape: Shape, position: Vector) -> Self {
-        Self {
-            shape,
-            position,
-            velocity: Vector::ZERO,
-            dynamic: false,
-            state: BodyState::Zone,
+            btype,
+            state,
         }
     }
 }
@@ -77,6 +66,15 @@ pub fn collision_info(body1: &Body, body2: &Body) -> Option<ContactManifold> {
 /// Unique identifier of an object stored in the world
 #[derive(Copy, Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct BodyHandle(pub usize);
+
+/// Type of the body, determines collision resolution and how it's affected by other bodies.
+#[derive(Copy, Clone, Debug)]
+pub enum BodyType {
+    /// Even when it moves it never collides with anything.
+    Static,
+    /// Collides with both static and dynamic bodies.
+    Dynamic,
+}
 
 /// State of the body, determines collision resolution and types of events sent.
 #[derive(Copy, Clone, Debug)]

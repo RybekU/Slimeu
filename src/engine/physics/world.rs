@@ -1,5 +1,5 @@
 use super::collision::ContactManifold;
-use super::object::{collided, collision_info, Body, BodyHandle, BodyState};
+use super::object::{collided, collision_info, Body, BodyHandle, BodyState, BodyType};
 use slab::Slab;
 
 type ContactInfo = (usize, usize, ContactManifold);
@@ -37,14 +37,14 @@ impl PhysicsWorld {
 
         // apply velocity for every body
         for (_, body) in bodies.iter_mut() {
-            if body.dynamic {
+            if let BodyType::Dynamic = body.btype {
                 body.position += body.velocity * dt;
             }
         }
 
         // detect collisions
         for (h1, body1) in bodies.iter() {
-            if !body1.dynamic {
+            if let BodyType::Static = body1.btype {
                 continue;
             }
             for (h2, body2) in bodies.iter() {

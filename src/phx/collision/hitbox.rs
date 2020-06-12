@@ -14,18 +14,7 @@ pub struct Hitbox {
 
 impl Hitbox {
     /// Position is the center of the hitbox
-    pub fn new(
-        pworld: &mut PhysicsWorld,
-        position: Vector,
-        size: Vector,
-        dynamic: bool,
-        can_collide: bool,
-    ) -> Self {
-        let body = match (dynamic, can_collide) {
-            (_, true) => Body::new_static_zone(Shape::AABB(size / 2), position),
-            (true, _) => Body::new_dynamic(Shape::AABB(size / 2), position, Vector::ZERO),
-            (false, _) => Body::new_static(Shape::AABB(size / 2), position),
-        };
+    pub fn new(pworld: &mut PhysicsWorld, body: Body) -> Self {
         let src = pworld.add(body);
         Self { src }
     }

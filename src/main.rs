@@ -83,13 +83,12 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
             .to_vec();
         use crate::phx::Hitbox;
         // Test adding collision to entity
-        let hitbox = Hitbox::new(
-            &mut cool,
-            Vector::new(120., 95.),
-            image_copy.size(),
-            true,
-            false,
-        );
+        use crate::engine::physics::builder::{BodyBuilder, Shape};
+        let body = BodyBuilder::new(Shape::AABB(image_copy.size() / 2), Vector::new(120., 95.))
+            .with_velocity(Vector::new(25., 16.))
+            .build();
+
+        let hitbox = Hitbox::new(&mut cool, body);
         let _with_collision = game_data
             .world
             .insert(
@@ -117,28 +116,21 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
 
         // Test add some entities with Position and Image use crate::engine::components::{Position, Sprite};
         // Test adding collision to entity
+        use crate::engine::physics::builder::{BodyBuilder, Shape};
         use crate::phx::Hitbox;
-        let hitbox = Hitbox::new(
-            &mut cool,
-            Vector::new(150., 150.),
-            image_copy.size(),
-            false,
-            false,
-        );
+        let body = BodyBuilder::new(Shape::AABB(image_copy.size() / 2), Vector::new(150., 150.))
+            .make_static();
+        let body_2 = body
+            .clone()
+            .with_position(Vector::new(200., 120.))
+            .non_solid();
+
+        let hitbox = Hitbox::new(&mut cool, body.clone().build());
         let hitbox2 = Hitbox::new(
             &mut cool,
-            Vector::new(125., 125.),
-            image_copy.size(),
-            false,
-            false,
+            body.with_position(Vector::new(125., 125.)).build(),
         );
-        let hitbox3 = Hitbox::new(
-            &mut cool,
-            Vector::new(200., 120.),
-            image_copy.size(),
-            false,
-            true,
-        );
+        let hitbox3 = Hitbox::new(&mut cool, body_2.build());
 
         let _with_collision = game_data
             .world
