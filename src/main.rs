@@ -81,10 +81,11 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
                 ],
             )
             .to_vec();
-        use crate::phx::Hitbox;
+        use crate::phx::{Category, Hitbox};
         // Test adding collision to entity
         use crate::engine::physics::builder::{BodyBuilder, Shape};
         let body = BodyBuilder::new(Shape::AABB(image_copy.size() / 2), Vector::new(120., 95.))
+            .with_category(Category::Ally as u32)
             .with_velocity(Vector::new(25., 16.))
             .build();
 
@@ -117,15 +118,18 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
         // Test add some entities with Position and Image use crate::engine::components::{Position, Sprite};
         // Test adding collision to entity
         use crate::engine::physics::builder::{BodyBuilder, Shape};
+        use crate::phx::Category;
         use crate::phx::Hitbox;
         let body = BodyBuilder::new(Shape::AABB(image_copy.size() / 2), Vector::new(150., 150.))
-            .make_static();
+            .make_static()
+            .with_category(Category::Ground as u32)
+            .with_mask(Category::Ground as u32);
         let body_2 = body
             .clone()
             .with_position(Vector::new(200., 120.))
             .non_solid();
 
-        let hitbox = Hitbox::new(&mut cool, body.clone().build());
+        let hitbox = Hitbox::new(&mut cool, body.clone().with_mask(u32::MAX).build());
         let hitbox2 = Hitbox::new(
             &mut cool,
             body.with_position(Vector::new(125., 125.)).build(),

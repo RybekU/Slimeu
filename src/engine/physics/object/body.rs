@@ -2,8 +2,9 @@ use super::super::collision::{self, ContactManifold, Shape};
 // TODO: maybe mint vector?
 use quicksilver::geom::Vector;
 
-/// Describes a body in shape of `Shape`
-//TODO: BodyBuilder for creation of bodies
+/// Describes a body in shape of `Shape`.
+///
+/// Currently there's no "fixture" like in Box2D and body has only 1 shape attached.
 #[derive(Clone, Debug)]
 pub struct Body {
     pub shape: Shape,
@@ -11,11 +12,14 @@ pub struct Body {
     /// static body CAN have velocity - it just behaves as if it had infinite mass
     /// and doesn't collide with other static bodies
     pub velocity: Vector,
-    //TODO: change into enum
+    /// Type of body - `static` or `dynamic`
     pub btype: BodyType,
-    //TODO: collision layer
     /// Whether to treat the body as physical or not
     pub state: BodyState,
+    /// Ideally only one bit should be set
+    pub category_bits: u32,
+    /// Bodies only collide if both of their masks match
+    pub mask_bits: u32,
 }
 
 impl Body {
@@ -25,6 +29,8 @@ impl Body {
         velocity: Vector,
         btype: BodyType,
         state: BodyState,
+        category_bits: u32,
+        mask_bits: u32,
     ) -> Self {
         Self {
             shape,
@@ -32,6 +38,8 @@ impl Body {
             velocity,
             btype,
             state,
+            category_bits,
+            mask_bits,
         }
     }
 }

@@ -1,9 +1,7 @@
-use quicksilver::geom::Vector;
-
 use crate::engine::components::Position;
 use legion::prelude::*;
 
-use crate::engine::physics::{Body, BodyHandle, PhysicsWorld, Shape};
+use crate::engine::physics::{Body, BodyHandle, PhysicsWorld};
 use crate::phx::Velocity;
 use crate::UPDATE_RATE;
 

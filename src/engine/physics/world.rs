@@ -42,13 +42,21 @@ impl PhysicsWorld {
             }
         }
 
+        // TODO: Real broad phase and track starting/stopping of collisions
         // detect collisions
         for (h1, body1) in bodies.iter() {
             if let BodyType::Static = body1.btype {
                 continue;
             }
+
             for (h2, body2) in bodies.iter() {
                 if h1 == h2 {
+                    continue;
+                }
+                // only bodies with matching masks can collide
+                let category_mismatch = ((body1.category_bits & body2.mask_bits) == 0)
+                    || ((body2.category_bits & body1.mask_bits) == 0);
+                if category_mismatch {
                     continue;
                 }
                 detect_collision(h1, &body1, h2, &body2, manifolds);
@@ -76,11 +84,10 @@ fn detect_collision(
     use BodyState::*;
     match (&body1.state, &body2.state) {
         (Solid, Solid) => {
-            let manifold = collision_info(body1, body2);
-            // debug!("Collision information: {:#?}", manifold);
-            manifold
-                .into_iter()
-                .for_each(|m| manifolds.push((h1, h2, m)));
+            if let Some(manifold) = collision_info(body1, body2) {
+                // debug!("Collision information: {:#?}", manifold);
+                manifolds.push((h1, h2, manifold))
+            }
         }
         (Solid, Zone) => {
             if collided(body1, body2) {
