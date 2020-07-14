@@ -85,7 +85,7 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
         // Test adding collision to entity
         use crate::engine::physics::builder::{BodyBuilder, Shape};
         let body = BodyBuilder::new(Shape::AABB(image_copy.size() / 2), Vector::new(120., 95.))
-            .with_category(Category::Ally as u32)
+            .with_category(Category::ALLY.bits())
             .with_velocity(Vector::new(25., 16.))
             .build();
 
@@ -122,8 +122,8 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
         use crate::phx::Hitbox;
         let body = BodyBuilder::new(Shape::AABB(image_copy.size() / 2), Vector::new(150., 150.))
             .make_static()
-            .with_category(Category::Ground as u32)
-            .with_mask(Category::Ground as u32);
+            .with_category(Category::GROUND.bits())
+            .with_mask(Category::GROUND.bits());
         let body_2 = body
             .clone()
             .with_position(Vector::new(200., 120.))

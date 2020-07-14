@@ -27,10 +27,7 @@ fxhash = "0.2.1"
 
 # physics deps
 slab = "0.4.2"
-
-# collisions
-ncollide2d = {git = "https://github.com/rustsim/ncollide", rev = "7c91c8d"} #{path = "../ncollide/build/ncollide2d" }
-nalgebra = "0.21.0"
+bitflags = "1.2.1"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 legion = {git = "https://github.com/TomGillen/legion", rev = "e2c7363"}
