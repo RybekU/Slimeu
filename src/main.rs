@@ -122,17 +122,16 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
         use crate::phx::Hitbox;
         let body = BodyBuilder::new(Shape::AABB(image_copy.size() / 2), Vector::new(150., 150.))
             .make_static()
-            .with_category(Category::GROUND.bits())
-            .with_mask(Category::GROUND.bits());
-        let body_2 = body
-            .clone()
-            .with_position(Vector::new(200., 120.))
-            .non_solid();
+            .with_category(Category::GROUND.bits());
+        // .with_mask(Category::GROUND.bits());
+        let body_2 = body.clone().with_position(Vector::new(200., 120.));
 
         let hitbox = Hitbox::new(&mut cool, body.clone().with_mask(u32::MAX).build());
         let hitbox2 = Hitbox::new(
             &mut cool,
-            body.with_position(Vector::new(125., 125.)).build(),
+            body.with_position(Vector::new(125., 125.))
+                .non_solid()
+                .build(),
         );
         let hitbox3 = Hitbox::new(&mut cool, body_2.build());
 
