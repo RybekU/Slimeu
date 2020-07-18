@@ -132,7 +132,6 @@ fn detect_collision(
         (Solid, Solid) => {
             if let Some(manifold) = collision_info(body1, body2) {
                 if *new_edge {
-                    debug!("Solid bodies started colliding: {} and {}", h1, h2);
                     events.push(PhysicsEvent::CollisionStarted(
                         BodyHandle(h1),
                         BodyHandle(h2),
@@ -142,52 +141,45 @@ fn detect_collision(
                 false
             } else {
                 if !*new_edge {
-                    debug!("Solid bodies stopped colliding: {} and {}", h1, h2);
                     events.push(PhysicsEvent::CollisionEnded(BodyHandle(h1), BodyHandle(h2)));
                 }
                 true
             }
         }
-        (Solid, Zone) => {
+        (Solid, Sensor) => {
             if collided(body1, body2) {
                 if *new_edge {
-                    debug!("Solid {} entered zone {}", h1, h2);
                     events.push(PhysicsEvent::OverlapStarted(BodyHandle(h1), BodyHandle(h2)));
                 }
                 false
             } else {
                 if !*new_edge {
-                    debug!("Solid {} left zone {}", h1, h2);
                     events.push(PhysicsEvent::OverlapEnded(BodyHandle(h1), BodyHandle(h2)));
                 }
                 true
             }
         }
-        (Zone, Solid) => {
+        (Sensor, Solid) => {
             if collided(body1, body2) {
                 if *new_edge {
-                    debug!("Solid {} entered zone {}", h2, h1);
                     events.push(PhysicsEvent::OverlapStarted(BodyHandle(h2), BodyHandle(h1)));
                 }
                 false
             } else {
                 if !*new_edge {
-                    debug!("Solid {} left zone {}", h2, h1);
                     events.push(PhysicsEvent::OverlapEnded(BodyHandle(h2), BodyHandle(h1)));
                 }
                 true
             }
         }
-        (Zone, Zone) => {
+        (Sensor, Sensor) => {
             if collided(body1, body2) {
                 if *new_edge {
-                    debug!("Zone {} overlapped with zone {}", h1, h2);
                     events.push(PhysicsEvent::OverlapStarted(BodyHandle(h1), BodyHandle(h2)));
                 }
                 false
             } else {
                 if !*new_edge {
-                    debug!("Zone {} separated with zone {}", h1, h2);
                     events.push(PhysicsEvent::OverlapEnded(BodyHandle(h1), BodyHandle(h2)));
                 }
                 true

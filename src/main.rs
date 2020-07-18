@@ -129,9 +129,7 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
         let hitbox = Hitbox::new(&mut cool, body.clone().with_mask(u32::MAX).build());
         let hitbox2 = Hitbox::new(
             &mut cool,
-            body.with_position(Vector::new(125., 125.))
-                .non_solid()
-                .build(),
+            body.with_position(Vector::new(125., 125.)).sensor().build(),
         );
         let hitbox3 = Hitbox::new(&mut cool, body_2.build());
 

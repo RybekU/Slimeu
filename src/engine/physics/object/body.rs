@@ -59,7 +59,6 @@ pub fn collided(body1: &Body, body2: &Body) -> bool {
 
 /// Generates a ContactManifold if two bodies collided.
 pub fn collision_info(body1: &Body, body2: &Body) -> Option<ContactManifold> {
-    // if a or b zone - return none, perhaps return an event?
     use Shape::*;
     match (body1.shape, body2.shape) {
         (AABB(half_extents1), AABB(half_extents2)) => collision::collision_aabb_aabb_manifold(
@@ -89,6 +88,6 @@ pub enum BodyType {
 pub enum BodyState {
     /// Solid body resolves collision.
     Solid,
-    /// Zone sends events about enter/exit/inside.
-    Zone,
+    /// Sensor sends events about possible overlap.
+    Sensor,
 }

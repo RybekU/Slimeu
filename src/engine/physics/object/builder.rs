@@ -39,8 +39,8 @@ impl BodyBuilder {
         self.btype = BodyType::Static;
         self
     }
-    pub fn non_solid(mut self) -> Self {
-        self.state = BodyState::Zone;
+    pub fn sensor(mut self) -> Self {
+        self.state = BodyState::Sensor;
         self
     }
     pub fn with_category(mut self, category_bits: u32) -> Self {
