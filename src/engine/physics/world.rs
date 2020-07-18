@@ -1,4 +1,5 @@
 use super::collision::{CollisionGraph, ContactManifold};
+use super::event::PhysicsEvent;
 use super::object::{collided, collision_info, Body, BodyHandle, BodyState, BodyType};
 use slab::Slab;
 
@@ -8,6 +9,8 @@ pub struct PhysicsWorld {
     pub bodies: Slab<Body>,
     pub collision_graph: CollisionGraph,
     pub manifolds: Vec<ContactInfo>,
+
+    pub events: Vec<PhysicsEvent>,
 }
 
 impl PhysicsWorld {
@@ -17,6 +20,7 @@ impl PhysicsWorld {
             bodies: Slab::with_capacity(128),
             collision_graph: CollisionGraph::with_capacity(128, 16),
             manifolds: Vec::with_capacity(128),
+            events: Vec::with_capacity(16),
         }
     }
     pub fn add(&mut self, body: Body) -> BodyHandle {
@@ -30,12 +34,17 @@ impl PhysicsWorld {
     pub fn mut_body(&mut self, handle: BodyHandle) -> Option<&mut Body> {
         self.bodies.get_mut(handle.0)
     }
+    pub fn events(&self) -> &Vec<PhysicsEvent> {
+        &self.events
+    }
 
     pub fn step(&mut self, dt: f32) {
         self.manifolds.clear();
+        self.events.clear();
         let bodies = &mut self.bodies;
         let manifolds = &mut self.manifolds;
         let collision_graph = &mut self.collision_graph;
+        let events = &mut self.events;
 
         // apply velocity for every body
         for (_, body) in bodies.iter_mut() {
@@ -78,8 +87,15 @@ impl PhysicsWorld {
             let body2 = &bodies[handle2];
             // todo: move "collided" to broad phase, try to do "collision started/ended" thing
             let edge_status = collision_graph.src.edge_weight_mut(edge_id).unwrap();
-            let remove_edge =
-                detect_collision(handle1, &body1, handle2, &body2, edge_status, manifolds);
+            let remove_edge = detect_collision(
+                handle1,
+                &body1,
+                handle2,
+                &body2,
+                edge_status,
+                manifolds,
+                events,
+            );
             if remove_edge {
                 removed_edges.push(edge_id);
             }
@@ -100,6 +116,7 @@ impl PhysicsWorld {
     }
 }
 
+// Makeshift function for collision detection
 fn detect_collision(
     h1: usize,
     body1: &Body,
@@ -107,6 +124,7 @@ fn detect_collision(
     body2: &Body,
     new_edge: &mut bool,
     manifolds: &mut Vec<ContactInfo>,
+    events: &mut Vec<PhysicsEvent>,
 ) -> bool {
     use BodyState::*;
 
@@ -115,12 +133,17 @@ fn detect_collision(
             if let Some(manifold) = collision_info(body1, body2) {
                 if *new_edge {
                     debug!("Solid bodies started colliding: {} and {}", h1, h2);
+                    events.push(PhysicsEvent::CollisionStarted(
+                        BodyHandle(h1),
+                        BodyHandle(h2),
+                    ));
                 }
                 manifolds.push((h1, h2, manifold));
                 false
             } else {
                 if !*new_edge {
                     debug!("Solid bodies stopped colliding: {} and {}", h1, h2);
+                    events.push(PhysicsEvent::CollisionEnded(BodyHandle(h1), BodyHandle(h2)));
                 }
                 true
             }
@@ -129,11 +152,13 @@ fn detect_collision(
             if collided(body1, body2) {
                 if *new_edge {
                     debug!("Solid {} entered zone {}", h1, h2);
+                    events.push(PhysicsEvent::OverlapStarted(BodyHandle(h1), BodyHandle(h2)));
                 }
                 false
             } else {
                 if !*new_edge {
                     debug!("Solid {} left zone {}", h1, h2);
+                    events.push(PhysicsEvent::OverlapEnded(BodyHandle(h1), BodyHandle(h2)));
                 }
                 true
             }
@@ -142,11 +167,13 @@ fn detect_collision(
             if collided(body1, body2) {
                 if *new_edge {
                     debug!("Solid {} entered zone {}", h2, h1);
+                    events.push(PhysicsEvent::OverlapStarted(BodyHandle(h2), BodyHandle(h1)));
                 }
                 false
             } else {
                 if !*new_edge {
                     debug!("Solid {} left zone {}", h2, h1);
+                    events.push(PhysicsEvent::OverlapEnded(BodyHandle(h2), BodyHandle(h1)));
                 }
                 true
             }
@@ -155,11 +182,13 @@ fn detect_collision(
             if collided(body1, body2) {
                 if *new_edge {
                     debug!("Zone {} overlapped with zone {}", h1, h2);
+                    events.push(PhysicsEvent::OverlapStarted(BodyHandle(h1), BodyHandle(h2)));
                 }
                 false
             } else {
                 if !*new_edge {
                     debug!("Zone {} separated with zone {}", h1, h2);
+                    events.push(PhysicsEvent::OverlapEnded(BodyHandle(h1), BodyHandle(h2)));
                 }
                 true
             }

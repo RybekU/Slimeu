@@ -42,6 +42,9 @@ pub fn physics_post_sync() -> Box<dyn Schedulable> {
                 .filter(changed::<Position>()),
         )
         .build(move |_, mut world, pworld, query| {
+            for event in pworld.events() {
+                println!("{:#?}", event);
+            }
             for (mut pos, mut vel, hitbox) in query.iter_mut(&mut world) {
                 let body = pworld
                     .get_body(hitbox.src)
