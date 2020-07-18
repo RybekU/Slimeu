@@ -1,8 +1,9 @@
 use crate::engine::components::Position;
 use legion::prelude::*;
 
-use crate::engine::physics::{Body, BodyHandle, PhysicsWorld};
+use crate::engine::physics::BodyHandle;
 use crate::phx::Velocity;
+use crate::phx::{Body, PhysicsWorld};
 use crate::UPDATE_RATE;
 
 /// Hitbox - offset should be set relative to the center

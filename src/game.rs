@@ -17,7 +17,7 @@ use quicksilver::graphics::Image;
 type ImageStorage = FxHashMap<String, Image>;
 
 // collisions
-use crate::engine::physics::PhysicsWorld;
+use crate::phx::PhysicsWorld;
 
 pub struct Game {
     pub universe: Universe,

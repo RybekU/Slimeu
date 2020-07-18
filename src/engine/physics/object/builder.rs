@@ -3,7 +3,7 @@ pub use super::{Body, BodyHandle, BodyState, BodyType};
 use quicksilver::geom::Vector;
 
 #[derive(Debug, Clone)]
-pub struct BodyBuilder {
+pub struct BodyBuilder<T> {
     pub shape: Shape,
     pub position: Vector,
 
@@ -13,10 +13,12 @@ pub struct BodyBuilder {
 
     pub category_bits: u32,
     pub mask_bits: u32,
+
+    pub user_tag: T,
 }
 
-impl BodyBuilder {
-    pub fn new(shape: Shape, position: Vector) -> Self {
+impl<T: Copy> BodyBuilder<T> {
+    pub fn new(shape: Shape, position: Vector, user_tag: T) -> Self {
         Self {
             shape,
             position,
@@ -25,6 +27,7 @@ impl BodyBuilder {
             state: BodyState::Solid,
             category_bits: 1,
             mask_bits: u32::MAX,
+            user_tag,
         }
     }
     pub fn with_position(mut self, position: Vector) -> Self {
@@ -51,7 +54,11 @@ impl BodyBuilder {
         self.mask_bits = mask_bits;
         self
     }
-    pub fn build(self) -> Body {
+    pub fn with_tag(mut self, user_tag: T) -> Self {
+        self.user_tag = user_tag;
+        self
+    }
+    pub fn build(self) -> Body<T> {
         Body::new(
             self.shape,
             self.position,
@@ -60,6 +67,7 @@ impl BodyBuilder {
             self.state,
             self.category_bits,
             self.mask_bits,
+            self.user_tag,
         )
     }
 }

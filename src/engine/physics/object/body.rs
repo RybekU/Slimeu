@@ -6,7 +6,7 @@ use quicksilver::geom::Vector;
 ///
 /// Currently there's no "fixture" like in Box2D and body has only 1 shape attached.
 #[derive(Clone, Debug)]
-pub struct Body {
+pub struct Body<T> {
     pub shape: Shape,
     pub position: Vector,
     /// static body CAN have velocity - it just behaves as if it had infinite mass
@@ -20,9 +20,11 @@ pub struct Body {
     pub category_bits: u32,
     /// Bodies only collide if both of their masks match
     pub mask_bits: u32,
+    /// User supplied tag for identification
+    pub user_tag: T,
 }
 
-impl Body {
+impl<T> Body<T> {
     pub fn new(
         shape: Shape,
         position: Vector,
@@ -31,6 +33,7 @@ impl Body {
         state: BodyState,
         category_bits: u32,
         mask_bits: u32,
+        user_tag: T,
     ) -> Self {
         Self {
             shape,
@@ -40,12 +43,13 @@ impl Body {
             state,
             category_bits,
             mask_bits,
+            user_tag,
         }
     }
 }
 
 /// Boolean test whether two bodies collided.
-pub fn collided(body1: &Body, body2: &Body) -> bool {
+pub fn collided<T>(body1: &Body<T>, body2: &Body<T>) -> bool {
     use Shape::*;
     match (body1.shape, body2.shape) {
         (AABB(half_extents1), AABB(half_extents2)) => collision::collision_aabb_aabb(
@@ -58,7 +62,7 @@ pub fn collided(body1: &Body, body2: &Body) -> bool {
 }
 
 /// Generates a ContactManifold if two bodies collided.
-pub fn collision_info(body1: &Body, body2: &Body) -> Option<ContactManifold> {
+pub fn collision_info<T>(body1: &Body<T>, body2: &Body<T>) -> Option<ContactManifold> {
     use Shape::*;
     match (body1.shape, body2.shape) {
         (AABB(half_extents1), AABB(half_extents2)) => collision::collision_aabb_aabb_manifold(

@@ -5,15 +5,16 @@ use slab::Slab;
 
 type ContactInfo = (usize, usize, ContactManifold);
 
-pub struct PhysicsWorld {
-    pub bodies: Slab<Body>,
+/// T - User supplied type used as a tag, present in all events
+pub struct PhysicsWorld<T> {
+    pub bodies: Slab<Body<T>>,
     pub collision_graph: CollisionGraph,
     pub manifolds: Vec<ContactInfo>,
 
-    pub events: Vec<PhysicsEvent>,
+    pub events: Vec<PhysicsEvent<T>>,
 }
 
-impl PhysicsWorld {
+impl<T: Copy> PhysicsWorld<T> {
     //TODO: with_capacity to set slab initial size
     pub fn new() -> Self {
         Self {
@@ -23,18 +24,18 @@ impl PhysicsWorld {
             events: Vec::with_capacity(16),
         }
     }
-    pub fn add(&mut self, body: Body) -> BodyHandle {
+    pub fn add(&mut self, body: Body<T>) -> BodyHandle {
         let key = self.bodies.insert(body);
         self.collision_graph.add_node(key);
         BodyHandle(key)
     }
-    pub fn get_body(&self, handle: BodyHandle) -> Option<&Body> {
+    pub fn get_body(&self, handle: BodyHandle) -> Option<&Body<T>> {
         self.bodies.get(handle.0)
     }
-    pub fn mut_body(&mut self, handle: BodyHandle) -> Option<&mut Body> {
+    pub fn mut_body(&mut self, handle: BodyHandle) -> Option<&mut Body<T>> {
         self.bodies.get_mut(handle.0)
     }
-    pub fn events(&self) -> &Vec<PhysicsEvent> {
+    pub fn events(&self) -> &Vec<PhysicsEvent<T>> {
         &self.events
     }
 
@@ -53,7 +54,7 @@ impl PhysicsWorld {
             }
         }
 
-        // TODO: Real broad phase and track starting/stopping of collisions
+        // TODO: Real broad phase
         // Makeshift broad-phase
         for (h1, body1) in bodies.iter() {
             if let BodyType::Static = body1.btype {
@@ -117,14 +118,14 @@ impl PhysicsWorld {
 }
 
 // Makeshift function for collision detection
-fn detect_collision(
+fn detect_collision<T: Copy>(
     h1: usize,
-    body1: &Body,
+    body1: &Body<T>,
     h2: usize,
-    body2: &Body,
+    body2: &Body<T>,
     new_edge: &mut bool,
     manifolds: &mut Vec<ContactInfo>,
-    events: &mut Vec<PhysicsEvent>,
+    events: &mut Vec<PhysicsEvent<T>>,
 ) -> bool {
     use BodyState::*;
 
@@ -135,13 +136,20 @@ fn detect_collision(
                     events.push(PhysicsEvent::CollisionStarted(
                         BodyHandle(h1),
                         BodyHandle(h2),
+                        body1.user_tag,
+                        body2.user_tag,
                     ));
                 }
                 manifolds.push((h1, h2, manifold));
                 false
             } else {
                 if !*new_edge {
-                    events.push(PhysicsEvent::CollisionEnded(BodyHandle(h1), BodyHandle(h2)));
+                    events.push(PhysicsEvent::CollisionEnded(
+                        BodyHandle(h1),
+                        BodyHandle(h2),
+                        body1.user_tag,
+                        body2.user_tag,
+                    ));
                 }
                 true
             }
@@ -149,12 +157,22 @@ fn detect_collision(
         (Solid, Sensor) => {
             if collided(body1, body2) {
                 if *new_edge {
-                    events.push(PhysicsEvent::OverlapStarted(BodyHandle(h1), BodyHandle(h2)));
+                    events.push(PhysicsEvent::OverlapStarted(
+                        BodyHandle(h1),
+                        BodyHandle(h2),
+                        body1.user_tag,
+                        body2.user_tag,
+                    ));
                 }
                 false
             } else {
                 if !*new_edge {
-                    events.push(PhysicsEvent::OverlapEnded(BodyHandle(h1), BodyHandle(h2)));
+                    events.push(PhysicsEvent::OverlapEnded(
+                        BodyHandle(h1),
+                        BodyHandle(h2),
+                        body1.user_tag,
+                        body2.user_tag,
+                    ));
                 }
                 true
             }
@@ -162,12 +180,22 @@ fn detect_collision(
         (Sensor, Solid) => {
             if collided(body1, body2) {
                 if *new_edge {
-                    events.push(PhysicsEvent::OverlapStarted(BodyHandle(h2), BodyHandle(h1)));
+                    events.push(PhysicsEvent::OverlapStarted(
+                        BodyHandle(h2),
+                        BodyHandle(h1),
+                        body2.user_tag,
+                        body1.user_tag,
+                    ));
                 }
                 false
             } else {
                 if !*new_edge {
-                    events.push(PhysicsEvent::OverlapEnded(BodyHandle(h2), BodyHandle(h1)));
+                    events.push(PhysicsEvent::OverlapEnded(
+                        BodyHandle(h2),
+                        BodyHandle(h1),
+                        body2.user_tag,
+                        body1.user_tag,
+                    ));
                 }
                 true
             }
@@ -175,12 +203,22 @@ fn detect_collision(
         (Sensor, Sensor) => {
             if collided(body1, body2) {
                 if *new_edge {
-                    events.push(PhysicsEvent::OverlapStarted(BodyHandle(h1), BodyHandle(h2)));
+                    events.push(PhysicsEvent::OverlapStarted(
+                        BodyHandle(h1),
+                        BodyHandle(h2),
+                        body1.user_tag,
+                        body2.user_tag,
+                    ));
                 }
                 false
             } else {
                 if !*new_edge {
-                    events.push(PhysicsEvent::OverlapEnded(BodyHandle(h1), BodyHandle(h2)));
+                    events.push(PhysicsEvent::OverlapEnded(
+                        BodyHandle(h1),
+                        BodyHandle(h2),
+                        body1.user_tag,
+                        body2.user_tag,
+                    ));
                 }
                 true
             }

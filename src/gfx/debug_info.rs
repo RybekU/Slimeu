@@ -4,8 +4,9 @@ use quicksilver::{
     graphics::{Color, Graphics},
 };
 
-use crate::engine::physics::{PhysicsWorld, Shape};
+use crate::engine::physics::{BodyState, Shape};
 use crate::phx::Hitbox;
+use crate::phx::PhysicsWorld;
 use legion::prelude::*;
 
 pub fn visualize_hitbox(gfx: &mut Graphics, game_data: &Game) {
@@ -26,8 +27,12 @@ pub fn visualize_hitbox(gfx: &mut Graphics, game_data: &Game) {
                     Vector::new(position.x - half_extents.x, position.y - half_extents.y),
                     Vector::new(half_extents.x, half_extents.y) * 2.0,
                 );
-                gfx.fill_rect(&area, Color::BLUE.with_alpha(0.2));
-                gfx.stroke_rect(&area, Color::BLUE);
+                let color = match physics_body.state {
+                    BodyState::Solid => Color::BLUE,
+                    BodyState::Sensor => Color::YELLOW,
+                };
+                gfx.fill_rect(&area, color.with_alpha(0.2));
+                gfx.stroke_rect(&area, color);
             }
         }
         // visualise the contacts

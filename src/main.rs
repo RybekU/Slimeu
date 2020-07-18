@@ -28,6 +28,9 @@ use crate::engine::components::{Position, Sprite};
 // To test velocity
 use crate::phx::Velocity;
 
+// To test physics tags
+use crate::phx::BodyTag;
+
 fn main() {
     run(
         Settings {
@@ -56,7 +59,7 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
     game_data.images.insert("image".into(), image);
 
     {
-        use engine::physics::PhysicsWorld;
+        use crate::phx::PhysicsWorld;
         let mut cool = game_data
             .resources
             .get_mut::<PhysicsWorld>()
@@ -84,10 +87,14 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
         use crate::phx::{Category, Hitbox};
         // Test adding collision to entity
         use crate::engine::physics::builder::{BodyBuilder, Shape};
-        let body = BodyBuilder::new(Shape::AABB(image_copy.size() / 2), Vector::new(120., 95.))
-            .with_category(Category::ALLY.bits())
-            .with_velocity(Vector::new(25., 16.))
-            .build();
+        let body = BodyBuilder::new(
+            Shape::AABB(image_copy.size() / 2),
+            Vector::new(120., 95.),
+            BodyTag::PC,
+        )
+        .with_category(Category::ALLY.bits())
+        .with_velocity(Vector::new(25., 16.))
+        .build();
 
         let hitbox = Hitbox::new(&mut cool, body);
         let _with_collision = game_data
@@ -109,7 +116,7 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
             .to_vec();
     }
     {
-        use engine::physics::PhysicsWorld;
+        use crate::phx::PhysicsWorld;
         let mut cool = game_data
             .resources
             .get_mut::<PhysicsWorld>()
@@ -120,16 +127,26 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
         use crate::engine::physics::builder::{BodyBuilder, Shape};
         use crate::phx::Category;
         use crate::phx::Hitbox;
-        let body = BodyBuilder::new(Shape::AABB(image_copy.size() / 2), Vector::new(150., 150.))
-            .make_static()
-            .with_category(Category::GROUND.bits());
+        let body = BodyBuilder::new(
+            Shape::AABB(image_copy.size() / 2),
+            Vector::new(150., 150.),
+            BodyTag::RectangleUnder,
+        )
+        .make_static()
+        .with_category(Category::GROUND.bits());
         // .with_mask(Category::GROUND.bits());
-        let body_2 = body.clone().with_position(Vector::new(200., 120.));
+        let body_2 = body
+            .clone()
+            .with_tag(BodyTag::RectangleRight)
+            .with_position(Vector::new(200., 120.));
 
         let hitbox = Hitbox::new(&mut cool, body.clone().with_mask(u32::MAX).build());
         let hitbox2 = Hitbox::new(
             &mut cool,
-            body.with_position(Vector::new(125., 125.)).sensor().build(),
+            body.with_position(Vector::new(125., 125.))
+                .sensor()
+                .with_tag(BodyTag::DummyArea)
+                .build(),
         );
         let hitbox3 = Hitbox::new(&mut cool, body_2.build());
 
