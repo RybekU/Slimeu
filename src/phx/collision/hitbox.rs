@@ -1,7 +1,7 @@
 use crate::engine::components::Position;
 use legion::prelude::*;
 
-use crate::engine::physics::BodyHandle;
+use resphys::BodyHandle;
 use crate::phx::Velocity;
 use crate::phx::{Body, PhysicsWorld};
 use crate::UPDATE_RATE;

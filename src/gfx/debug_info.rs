@@ -4,7 +4,7 @@ use quicksilver::{
     graphics::{Color, Graphics},
 };
 
-use crate::engine::physics::{BodyState, Shape};
+use resphys::{BodyState, Shape};
 use crate::phx::Hitbox;
 use crate::phx::PhysicsWorld;
 use legion::prelude::*;

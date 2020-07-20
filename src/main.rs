@@ -86,7 +86,7 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
             .to_vec();
         use crate::phx::{Category, Hitbox};
         // Test adding collision to entity
-        use crate::engine::physics::builder::{BodyBuilder, Shape};
+        use resphys::builder::{BodyBuilder, Shape};
         let body = BodyBuilder::new(
             Shape::AABB(image_copy.size() / 2),
             Vector::new(120., 95.),
@@ -124,7 +124,7 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
 
         // Test add some entities with Position and Image use crate::engine::components::{Position, Sprite};
         // Test adding collision to entity
-        use crate::engine::physics::builder::{BodyBuilder, Shape};
+        use resphys::builder::{BodyBuilder, Shape};
         use crate::phx::Category;
         use crate::phx::Hitbox;
         let body = BodyBuilder::new(
