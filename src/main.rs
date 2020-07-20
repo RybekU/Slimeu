@@ -87,13 +87,14 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
         use crate::phx::{Category, Hitbox};
         // Test adding collision to entity
         use resphys::builder::{BodyBuilder, Shape};
+        let img_size: mint::Vector2<f32> = (image_copy.size() / 2).into();
         let body = BodyBuilder::new(
-            Shape::AABB(image_copy.size() / 2),
-            Vector::new(120., 95.),
+            Shape::AABB(img_size.into()),
+            mint::Vector2 { x: 120., y: 95. }.into(),
             BodyTag::PC,
         )
         .with_category(Category::ALLY.bits())
-        .with_velocity(Vector::new(25., 16.))
+        .with_velocity(mint::Vector2 { x: 25., y: 16. }.into())
         .build();
 
         let hitbox = Hitbox::new(&mut cool, body);
@@ -124,12 +125,13 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
 
         // Test add some entities with Position and Image use crate::engine::components::{Position, Sprite};
         // Test adding collision to entity
-        use resphys::builder::{BodyBuilder, Shape};
         use crate::phx::Category;
         use crate::phx::Hitbox;
+        use resphys::builder::{BodyBuilder, Shape};
+        let img_size: mint::Vector2<f32> = (image_copy.size() / 2).into();
         let body = BodyBuilder::new(
-            Shape::AABB(image_copy.size() / 2),
-            Vector::new(150., 150.),
+            Shape::AABB(img_size.into()),
+            mint::Vector2 { x: 150., y: 150. }.into(),
             BodyTag::RectangleUnder,
         )
         .make_static()
@@ -138,12 +140,12 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
         let body_2 = body
             .clone()
             .with_tag(BodyTag::RectangleRight)
-            .with_position(Vector::new(200., 120.));
+            .with_position(mint::Vector2 { x: 200., y: 120. }.into());
 
         let hitbox = Hitbox::new(&mut cool, body.clone().with_mask(u32::MAX).build());
         let hitbox2 = Hitbox::new(
             &mut cool,
-            body.with_position(Vector::new(125., 125.))
+            body.with_position(mint::Vector2 { x: 125., y: 125. }.into())
                 .sensor()
                 .with_tag(BodyTag::DummyArea)
                 .build(),

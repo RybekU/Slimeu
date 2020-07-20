@@ -4,10 +4,10 @@ use quicksilver::{
     graphics::{Color, Graphics},
 };
 
-use resphys::{BodyState, Shape};
 use crate::phx::Hitbox;
 use crate::phx::PhysicsWorld;
 use legion::prelude::*;
+use resphys::{BodyState, Shape};
 
 pub fn visualize_hitbox(gfx: &mut Graphics, game_data: &Game) {
     let query = <Read<Hitbox>>::query();
@@ -24,8 +24,8 @@ pub fn visualize_hitbox(gfx: &mut Graphics, game_data: &Game) {
         match physics_body.shape {
             AABB(half_extents) => {
                 let area = Rectangle::new(
-                    Vector::new(position.x - half_extents.x, position.y - half_extents.y),
-                    Vector::new(half_extents.x, half_extents.y) * 2.0,
+                    mint::Vector2::from(position - half_extents),
+                    mint::Vector2::from(half_extents * 2.0),
                 );
                 let color = match physics_body.state {
                     BodyState::Solid => Color::BLUE,
@@ -45,8 +45,14 @@ pub fn visualize_hitbox(gfx: &mut Graphics, game_data: &Game) {
                 match contact {
                     None => break,
                     Some(c) => {
-                        let points = vec![c.contact_point, c.contact_point - c.normal * c.depth];
-                        gfx.stroke_circle(&Circle::new(c.contact_point, 2.), *color);
+                        let points: Vec<Vector> = vec![
+                            mint::Vector2::from(c.contact_point).into(),
+                            mint::Vector2::from(c.contact_point - c.normal * c.depth).into(),
+                        ];
+                        gfx.stroke_circle(
+                            &Circle::new(mint::Vector2::from(c.contact_point), 2.),
+                            *color,
+                        );
                         gfx.stroke_path(&points, *color);
                     }
                 }
