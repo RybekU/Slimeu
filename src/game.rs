@@ -17,7 +17,7 @@ use quicksilver::graphics::Image;
 type ImageStorage = FxHashMap<String, Image>;
 
 // collisions
-use crate::phx::CollisionWorld;
+use crate::phx::PhysicsWorld;
 
 pub struct Game {
     pub universe: Universe,
@@ -60,8 +60,7 @@ fn init_resources() -> Resources {
     let mut resources = Resources::default();
     resources.insert(EventCache::default());
     resources.insert(ButtonsState::default());
-    resources.insert(CollisionWorld::new(0.02));
-    resources.insert(crate::phx::PositionCorrection::default());
+    resources.insert(PhysicsWorld::new());
     resources
 }
 
@@ -104,11 +103,9 @@ fn init_schedule() -> Schedule {
 
     Schedule::builder()
         .add_system(test_button_state)
-        .add_system(crate::phx::movement::movement())
-        // from here onwards Position shouldn't be modified by non-ncollide related systems
-        .add_system(crate::phx::sync_ncollide())
-        .add_system(crate::phx::ncollide_update())
-        .add_system(crate::phx::correct_position())
+        // also runs physics step
+        .add_system(crate::phx::physics_pre_sync())
+        .add_system(crate::phx::physics_post_sync())
         // here the position is already corrected... OR IS IT?
         .build()
 }

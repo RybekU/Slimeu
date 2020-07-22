@@ -25,11 +25,11 @@ pub use game::UPDATE_RATE;
 // To add test entities
 use crate::engine::components::{Position, Sprite};
 
-// To add test collision
-use crate::phx::CollisionWorld;
-
 // To test velocity
 use crate::phx::Velocity;
+
+// To test physics tags
+use crate::phx::BodyTag;
 
 fn main() {
     run(
@@ -59,10 +59,11 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
     game_data.images.insert("image".into(), image);
 
     {
+        use crate::phx::PhysicsWorld;
         let mut cool = game_data
             .resources
-            .get_mut::<CollisionWorld>()
-            .expect("CollisionWorld missing somehow");
+            .get_mut::<PhysicsWorld>()
+            .expect("PhysicsWorld missing somehow");
 
         // Test add some entities with Position and Image use crate::engine::components::{Position, Sprite};
         let _entities = game_data
@@ -84,80 +85,30 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
             )
             .to_vec();
 
-        // Test adding collision to entity
-        let (hitbox, _hitbox_ref) = crate::phx::Hitbox::new(
+        new_player(
+            &mut game_data.world,
             &mut cool,
-            Vector::new(100., 100.),
-            image_copy.size(),
-            crate::phx::CollisionGroup::Ally,
+            mint::Vector2 { x: 120., y: 95. },
+            &image_copy,
         );
-        let _with_collision = game_data
-            .world
-            .insert(
-                (),
-                vec![(
-                    Position {
-                        src: Vector::new(100., 100.),
-                    },
-                    Sprite::new("image".into(), &image_copy),
-                    hitbox,
-                    Velocity {
-                        src: Vector::new(16., 16.),
-                    },
-                    Player,
-                )],
-            )
-            .to_vec();
-    }
-    {
-        let mut cool = game_data
-            .resources
-            .get_mut::<CollisionWorld>()
-            .expect("CollisionWorld missing somehow");
-
-        // Test add some entities with Position and Image use crate::engine::components::{Position, Sprite};
-
-        // Test adding collision to entity
-        let (hitbox, _hitbox_ref) = crate::phx::Hitbox::new(
+        new_obstacle(
+            &mut game_data.world,
             &mut cool,
-            Vector::new(150., 150.),
-            image_copy.size(),
-            crate::phx::CollisionGroup::Terrain,
+            mint::Vector2 { x: 150., y: 150. },
+            &image_copy,
         );
-        let (hitbox2, _hitbox_ref) = crate::phx::Hitbox::new(
+        new_obstacle(
+            &mut game_data.world,
             &mut cool,
-            Vector::new(125., 125.),
-            image_copy.size(),
-            crate::phx::CollisionGroup::Terrain,
+            mint::Vector2 { x: 200., y: 120. },
+            &image_copy,
         );
-        let _with_collision = game_data
-            .world
-            .insert(
-                (),
-                vec![
-                    (
-                        Position {
-                            src: Vector::new(150., 150.),
-                        },
-                        Sprite::new("image".into(), &image_copy),
-                        hitbox,
-                        Velocity {
-                            src: Vector::new(0., 0.),
-                        },
-                    ),
-                    (
-                        Position {
-                            src: Vector::new(125., 125.),
-                        },
-                        Sprite::new("image".into(), &image_copy),
-                        hitbox2,
-                        Velocity {
-                            src: Vector::new(0., 0.),
-                        },
-                    ),
-                ],
-            )
-            .to_vec();
+        new_zone(
+            &mut game_data.world,
+            &mut cool,
+            mint::Vector2 { x: 125., y: 125. },
+            &image_copy,
+        );
     }
     let camera = Transform::orthographic(Rectangle::new(Vector::ZERO, DIMENSIONS));
     gfx.set_projection(camera);
@@ -181,6 +132,118 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
 
         crate::gfx::render(&window, &mut gfx, &game_data);
     }
+}
+
+// TODO: Proper spawning instead of this... thing
+fn new_player(
+    world: &mut legion::prelude::World,
+    cworld: &mut crate::phx::PhysicsWorld,
+    position: mint::Vector2<f32>,
+    image: &Image,
+) {
+    use crate::phx::{Category, Hitbox};
+    use resphys::builder::{BodyBuilder, Shape};
+
+    let img_size: mint::Vector2<f32> = (image.size() / 2).into();
+    let body = BodyBuilder::new(Shape::AABB(img_size.into()), position.into(), BodyTag::PC)
+        .with_category(Category::ALLY.bits())
+        .with_velocity(mint::Vector2 { x: 25., y: 16. }.into())
+        .build();
+    let hitbox = Hitbox::new(cworld, body);
+
+    let _with_collision = world
+        .insert(
+            (),
+            vec![(
+                Position {
+                    src: position.into(),
+                },
+                Sprite::new("image".into(), &image),
+                hitbox,
+                Velocity {
+                    src: Vector::new(25., 16.),
+                },
+                // Player,
+            )],
+        )
+        .to_vec();
+}
+
+fn new_obstacle(
+    world: &mut legion::prelude::World,
+    cworld: &mut crate::phx::PhysicsWorld,
+    position: mint::Vector2<f32>,
+    image: &Image,
+) {
+    use crate::phx::{Category, Hitbox};
+    use resphys::builder::{BodyBuilder, Shape};
+
+    let img_size: mint::Vector2<f32> = (image.size() / 2).into();
+    let body = BodyBuilder::new(
+        Shape::AABB(img_size.into()),
+        position.into(),
+        BodyTag::Obstacle,
+    )
+    .with_category(Category::GROUND.bits())
+    .make_static()
+    .build();
+    let hitbox = Hitbox::new(cworld, body);
+
+    let _with_collision = world
+        .insert(
+            (),
+            vec![(
+                Position {
+                    src: position.into(),
+                },
+                Sprite::new("image".into(), &image),
+                hitbox,
+                Velocity {
+                    src: Vector::new(0., 0.),
+                },
+                // Player,
+            )],
+        )
+        .to_vec();
+}
+
+fn new_zone(
+    world: &mut legion::prelude::World,
+    cworld: &mut crate::phx::PhysicsWorld,
+    position: mint::Vector2<f32>,
+    image: &Image,
+) {
+    use crate::phx::{Category, Hitbox};
+    use resphys::builder::{BodyBuilder, Shape};
+
+    let img_size: mint::Vector2<f32> = (image.size() / 2).into();
+    let body = BodyBuilder::new(
+        Shape::AABB(img_size.into()),
+        position.into(),
+        BodyTag::DummyArea,
+    )
+    .with_category(Category::GROUND.bits())
+    .make_static()
+    .sensor()
+    .build();
+    let hitbox = Hitbox::new(cworld, body);
+
+    let _with_collision = world
+        .insert(
+            (),
+            vec![(
+                Position {
+                    src: position.into(),
+                },
+                Sprite::new("image".into(), &image),
+                hitbox,
+                Velocity {
+                    src: Vector::new(0., 0.),
+                },
+                // Player,
+            )],
+        )
+        .to_vec();
 }
 
 fn set_resize_strategy(window: &Window, gfx: &Graphics) -> ResizeStrategy {

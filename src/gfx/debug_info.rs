@@ -1,34 +1,62 @@
 use crate::game::Game;
 use quicksilver::{
-    geom::{Rectangle, Vector},
+    geom::{Circle, Rectangle, Vector},
     graphics::{Color, Graphics},
 };
 
-use crate::phx::{CollisionWorld, Hitbox};
+use crate::phx::Hitbox;
+use crate::phx::PhysicsWorld;
 use legion::prelude::*;
-use ncollide2d::shape::Cuboid;
+use resphys::{BodyState, Shape};
 
 pub fn visualize_hitbox(gfx: &mut Graphics, game_data: &Game) {
     let query = <Read<Hitbox>>::query();
-    let cworld = game_data
+    let pworld = game_data
         .resources
-        .get::<CollisionWorld>()
-        .expect("CollisionWorld missing somehow");
+        .get::<PhysicsWorld>()
+        .expect("PhysicsWorld missing somehow");
     for hitbox in query.iter(&game_data.world) {
-        let ncollide_rectangle = cworld
-            .collision_object(hitbox.src)
+        let physics_body = pworld
+            .get_body(hitbox.src)
             .expect("Debug_Info: Handle to invalid collision object");
-        let position = ncollide_rectangle.position().translation;
-        let half_rect = ncollide_rectangle
-            .shape()
-            .as_shape::<Cuboid<f32>>()
-            .expect("Debug_Info: The shape isn't a cuboid")
-            .half_extents();
-        let area = Rectangle::new(
-            Vector::new(position.x - half_rect.x, position.y - half_rect.y),
-            Vector::new(half_rect.x, half_rect.y) * 2.0,
-        );
-        gfx.fill_rect(&area, Color::BLUE.with_alpha(0.2));
-        gfx.stroke_rect(&area, Color::BLUE);
+        let position = physics_body.position;
+        use Shape::*;
+        match physics_body.shape {
+            AABB(half_extents) => {
+                let area = Rectangle::new(
+                    mint::Vector2::from(position - half_extents),
+                    mint::Vector2::from(half_extents * 2.0),
+                );
+                let color = match physics_body.state {
+                    BodyState::Solid => Color::BLUE,
+                    BodyState::Sensor => Color::YELLOW,
+                };
+                gfx.fill_rect(&area, color.with_alpha(0.2));
+                gfx.stroke_rect(&area, color);
+            }
+        }
+        // visualise the contacts
+        for (_, _, manifold) in pworld.manifolds.iter() {
+            for (contact, color) in manifold
+                .contacts
+                .iter()
+                .zip([Color::ORANGE, Color::RED].iter())
+            {
+                match contact {
+                    None => break,
+                    Some(c) => {
+                        let points: Vec<Vector> = vec![
+                            mint::Vector2::from(c.contact_point).into(),
+                            mint::Vector2::from(c.contact_point - c.normal * c.depth).into(),
+                        ];
+                        gfx.stroke_circle(
+                            &Circle::new(mint::Vector2::from(c.contact_point), 2.),
+                            *color,
+                        );
+                        gfx.stroke_path(&points, *color);
+                    }
+                }
+            }
+        }
     }
 }
