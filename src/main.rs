@@ -84,112 +84,31 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
                 ],
             )
             .to_vec();
-        use crate::phx::{Category, Hitbox};
-        // Test adding collision to entity
-        use resphys::builder::{BodyBuilder, Shape};
-        let img_size: mint::Vector2<f32> = (image_copy.size() / 2).into();
-        let body = BodyBuilder::new(
-            Shape::AABB(img_size.into()),
-            mint::Vector2 { x: 120., y: 95. }.into(),
-            BodyTag::PC,
-        )
-        .with_category(Category::ALLY.bits())
-        .with_velocity(mint::Vector2 { x: 25., y: 16. }.into())
-        .build();
 
-        let hitbox = Hitbox::new(&mut cool, body);
-        let _with_collision = game_data
-            .world
-            .insert(
-                (),
-                vec![(
-                    Position {
-                        src: Vector::new(120., 95.),
-                    },
-                    Sprite::new("image".into(), &image_copy),
-                    hitbox,
-                    Velocity {
-                        src: Vector::new(25., 16.),
-                    },
-                    // Player,
-                )],
-            )
-            .to_vec();
-    }
-    {
-        use crate::phx::PhysicsWorld;
-        let mut cool = game_data
-            .resources
-            .get_mut::<PhysicsWorld>()
-            .expect("PhysicsWorld missing somehow");
-
-        // Test add some entities with Position and Image use crate::engine::components::{Position, Sprite};
-        // Test adding collision to entity
-        use crate::phx::Category;
-        use crate::phx::Hitbox;
-        use resphys::builder::{BodyBuilder, Shape};
-        let img_size: mint::Vector2<f32> = (image_copy.size() / 2).into();
-        let body = BodyBuilder::new(
-            Shape::AABB(img_size.into()),
-            mint::Vector2 { x: 150., y: 150. }.into(),
-            BodyTag::RectangleUnder,
-        )
-        .make_static()
-        .with_category(Category::GROUND.bits());
-        // .with_mask(Category::GROUND.bits());
-        let body_2 = body
-            .clone()
-            .with_tag(BodyTag::RectangleRight)
-            .with_position(mint::Vector2 { x: 200., y: 120. }.into());
-
-        let hitbox = Hitbox::new(&mut cool, body.clone().with_mask(u32::MAX).build());
-        let hitbox2 = Hitbox::new(
+        new_player(
+            &mut game_data.world,
             &mut cool,
-            body.with_position(mint::Vector2 { x: 125., y: 125. }.into())
-                .sensor()
-                .with_tag(BodyTag::DummyArea)
-                .build(),
+            mint::Vector2 { x: 120., y: 95. },
+            &image_copy,
         );
-        let hitbox3 = Hitbox::new(&mut cool, body_2.build());
-
-        let _with_collision = game_data
-            .world
-            .insert(
-                (),
-                vec![
-                    (
-                        Position {
-                            src: Vector::new(150., 150.),
-                        },
-                        Sprite::new("image".into(), &image_copy),
-                        hitbox,
-                        Velocity {
-                            src: Vector::new(0., 0.),
-                        },
-                    ),
-                    (
-                        Position {
-                            src: Vector::new(125., 125.),
-                        },
-                        Sprite::new("image".into(), &image_copy),
-                        hitbox2,
-                        Velocity {
-                            src: Vector::new(0., 0.),
-                        },
-                    ),
-                    (
-                        Position {
-                            src: Vector::new(200., 120.),
-                        },
-                        Sprite::new("image".into(), &image_copy),
-                        hitbox3,
-                        Velocity {
-                            src: Vector::new(0., 0.),
-                        },
-                    ),
-                ],
-            )
-            .to_vec();
+        new_obstacle(
+            &mut game_data.world,
+            &mut cool,
+            mint::Vector2 { x: 150., y: 150. },
+            &image_copy,
+        );
+        new_obstacle(
+            &mut game_data.world,
+            &mut cool,
+            mint::Vector2 { x: 200., y: 120. },
+            &image_copy,
+        );
+        new_zone(
+            &mut game_data.world,
+            &mut cool,
+            mint::Vector2 { x: 125., y: 125. },
+            &image_copy,
+        );
     }
     let camera = Transform::orthographic(Rectangle::new(Vector::ZERO, DIMENSIONS));
     gfx.set_projection(camera);
@@ -213,6 +132,118 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
 
         crate::gfx::render(&window, &mut gfx, &game_data);
     }
+}
+
+// TODO: Proper spawning instead of this... thing
+fn new_player(
+    world: &mut legion::prelude::World,
+    cworld: &mut crate::phx::PhysicsWorld,
+    position: mint::Vector2<f32>,
+    image: &Image,
+) {
+    use crate::phx::{Category, Hitbox};
+    use resphys::builder::{BodyBuilder, Shape};
+
+    let img_size: mint::Vector2<f32> = (image.size() / 2).into();
+    let body = BodyBuilder::new(Shape::AABB(img_size.into()), position.into(), BodyTag::PC)
+        .with_category(Category::ALLY.bits())
+        .with_velocity(mint::Vector2 { x: 25., y: 16. }.into())
+        .build();
+    let hitbox = Hitbox::new(cworld, body);
+
+    let _with_collision = world
+        .insert(
+            (),
+            vec![(
+                Position {
+                    src: position.into(),
+                },
+                Sprite::new("image".into(), &image),
+                hitbox,
+                Velocity {
+                    src: Vector::new(25., 16.),
+                },
+                // Player,
+            )],
+        )
+        .to_vec();
+}
+
+fn new_obstacle(
+    world: &mut legion::prelude::World,
+    cworld: &mut crate::phx::PhysicsWorld,
+    position: mint::Vector2<f32>,
+    image: &Image,
+) {
+    use crate::phx::{Category, Hitbox};
+    use resphys::builder::{BodyBuilder, Shape};
+
+    let img_size: mint::Vector2<f32> = (image.size() / 2).into();
+    let body = BodyBuilder::new(
+        Shape::AABB(img_size.into()),
+        position.into(),
+        BodyTag::Obstacle,
+    )
+    .with_category(Category::GROUND.bits())
+    .make_static()
+    .build();
+    let hitbox = Hitbox::new(cworld, body);
+
+    let _with_collision = world
+        .insert(
+            (),
+            vec![(
+                Position {
+                    src: position.into(),
+                },
+                Sprite::new("image".into(), &image),
+                hitbox,
+                Velocity {
+                    src: Vector::new(0., 0.),
+                },
+                // Player,
+            )],
+        )
+        .to_vec();
+}
+
+fn new_zone(
+    world: &mut legion::prelude::World,
+    cworld: &mut crate::phx::PhysicsWorld,
+    position: mint::Vector2<f32>,
+    image: &Image,
+) {
+    use crate::phx::{Category, Hitbox};
+    use resphys::builder::{BodyBuilder, Shape};
+
+    let img_size: mint::Vector2<f32> = (image.size() / 2).into();
+    let body = BodyBuilder::new(
+        Shape::AABB(img_size.into()),
+        position.into(),
+        BodyTag::DummyArea,
+    )
+    .with_category(Category::GROUND.bits())
+    .make_static()
+    .sensor()
+    .build();
+    let hitbox = Hitbox::new(cworld, body);
+
+    let _with_collision = world
+        .insert(
+            (),
+            vec![(
+                Position {
+                    src: position.into(),
+                },
+                Sprite::new("image".into(), &image),
+                hitbox,
+                Velocity {
+                    src: Vector::new(0., 0.),
+                },
+                // Player,
+            )],
+        )
+        .to_vec();
 }
 
 fn set_resize_strategy(window: &Window, gfx: &Graphics) -> ResizeStrategy {

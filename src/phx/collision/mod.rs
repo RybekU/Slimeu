@@ -13,8 +13,8 @@ pub type Body = B<BodyTag>;
 pub enum BodyTag {
     PC,
     DummyArea,
-    RectangleUnder,
-    RectangleRight,
+    Obstacle,
+    // RectangleRight,
 }
 
 bitflags! {

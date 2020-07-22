@@ -60,7 +60,6 @@ fn init_resources() -> Resources {
     let mut resources = Resources::default();
     resources.insert(EventCache::default());
     resources.insert(ButtonsState::default());
-    // resources.insert(CollisionWorld::new(0.02));
     resources.insert(PhysicsWorld::new());
     resources
 }
